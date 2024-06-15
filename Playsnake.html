@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Snake Game</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #1e1e1e;
+            margin: 0;
+            color: white;
+            font-family: 'Roboto', sans-serif;
+            text-align: center;
+        }
+        .container {
+            max-width: 600px;
+            width: 90%;
+            margin: auto;
+        }
+        .game-container {
+            position: relative;
+            border: 2px solid #fff;
+            margin-bottom: 20px;
+            box-shadow: 0 0 15px rgba(0,0,0,0.5);
+            padding: 1px;
+            box-sizing: border-box;
+        }
+        canvas {
+            display: block;
+            margin: auto;
+            background-color: #1e1e1e;
+        }
+        .instructions, .score-board {
+            margin-bottom: 20px;
+        }
+        .instructions p, .score-board h2 {
+            margin: 5px 0;
+        }
+        .button {
+            background-color: #0073e6;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            font-size: 1rem;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .button:hover {
+            background-color: #005bb5;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="instructions">
+            <h2>Snake Game Instructions</h2>
+            <p>Use the arrow keys to control the snake:</p>
+            <p>&#8592; Move Left &nbsp;&nbsp; &#8593; Move Up &nbsp;&nbsp; &#8594; Move Right &nbsp;&nbsp; &#8595; Move Down</p>
+            <p>Eat the red food to grow longer and earn points. Avoid running into the walls or yourself!</p>
+        </div>
+        <div class="game-container">
+            <canvas id="gameCanvas" width="400" height="400"></canvas>
+        </div>
+        <div class="score-board">
+            <h2>Score: <span id="score">0</span></h2>
+        </div>
+        <a href="Playsnake.html">
+            <button class="button">Home</button>
+        </a>
+    </div>
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const scoreDisplay = document.getElementById('score');
+
+        const gridSize = 20;
+        const tileCount = canvas.width / gridSize;
+
+        let snake = [{ x: 10, y: 10 }];
+        let direction = { x: 0, y: 0 };
+        let food = { x: Math.floor(Math.random() * tileCount), y: Math.floor(Math.random() * tileCount) };
+        let score = 0;
+
+        document.addEventListener('keydown', changeDirection);
+
+        function gameLoop() {
+            moveSnake();
+            if (checkCollision()) {
+                resetGame();
+            } else {
+                if (checkFood()) {
+                    score++;
+                    scoreDisplay.textContent = score;
+                    placeFood();
+                } else {
+                    snake.pop();
+                }
+                drawGame();
+            }
+            setTimeout(gameLoop, 100);
+        }
+
+        function drawGame() {
+            ctx.fillStyle = '#1e1e1e';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            ctx.fillStyle = 'lime';
+            snake.forEach(segment => ctx.fillRect(segment.x * gridSize, segment.y * gridSize, gridSize - 2, gridSize - 2));
+
+            ctx.fillStyle = 'red';
+            ctx.fillRect(food.x * gridSize, food.y * gridSize, gridSize - 2, gridSize - 2);
+        }
+
+        function moveSnake() {
+            const head = { x: snake[0].x + direction.x, y: snake[0].y + direction.y };
+            snake.unshift(head);
+        }
+
+        function changeDirection(event) {
+            switch (event.keyCode) {
+                case 37:
+                    if (direction.x === 0) direction = { x: -1, y: 0 };
+                    break;
+                case 38:
+                    if (direction.y === 0) direction = { x: 0, y: -1 };
+                    break;
+                case 39:
+                    if (direction.x === 0) direction = { x: 1, y: 0 };
+                    break;
+                case 40:
+                    if (direction.y === 0) direction = { x: 0, y: 1 };
+                    break;
+            }
+        }
+
+        function checkCollision() {
+            const head = snake[0];
+            if (head.x < 0 || head.x >= tileCount || head.y < 0 || head.y >= tileCount) {
+                return true;
+            }
+            for (let i = 1; i < snake.length; i++) {
+                if (snake[i].x === head.x && snake[i].y === head.y) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        function checkFood() {
+            const head = snake[0];
+            return head.x === food.x && head.y === food.y;
+        }
+
+        function placeFood() {
+            food = { x: Math.floor(Math.random() * tileCount), y: Math.floor(Math.random() * tileCount) };
+        }
+
+        function resetGame() {
+            snake = [{ x: 10, y: 10 }];
+            direction = { x: 0, y: 0 };
+            score = 0;
+            scoreDisplay.textContent = score;
+            placeFood();
+        }
+
+        gameLoop();
+    </script>
+</body>
+</html>
